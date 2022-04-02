@@ -24,12 +24,17 @@
  */
 
 #include <Arduino.h>
+#include <Faker.h>
 #include "AnalogMultiButton.h"
 
-AnalogMultiButton::AnalogMultiButton(int pin, int total, const int values[], unsigned int debounceDuration, unsigned int analogResolution)
+AnalogMultiButton::AnalogMultiButton(int pin, int total, const int values[],
+    unsigned int debounceDuration, unsigned int analogResolution,
+    Faker::Clock* clock, Faker::GPIO* gpio)
 {
-  pinMode(pin, INPUT ); // ensure button pin is an input
-  digitalWrite(pin, LOW ); // ensure pullup is off on button pin
+  this->clock = clock;
+  this->gpio = gpio;
+  this->gpio->pinMode(pin, INPUT ); // ensure button pin is an input
+  this->gpio->digitalWrite(pin, LOW ); // ensure pullup is off on button pin
   
   this->pin = pin;
   this->total = total;
@@ -57,9 +62,9 @@ void AnalogMultiButton::update()
   buttonOnPress = -1;
   buttonOnRelease = -1;
   lastUpdateTime = thisUpdateTime;
-  thisUpdateTime = millis();
+  thisUpdateTime = clock->millis();
   
-  int a = analogRead(pin);
+  int a = gpio->analogRead(pin);
   int button = getButtonForAnalogValue(a);
   if(debounceButton(button) && button != buttonPressed) 
   {

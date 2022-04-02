@@ -27,19 +27,28 @@
 #define ANALOG_MULTI_BUTTON_H
 
 #include <Arduino.h>
+#include <Faker.h>
 
 class AnalogMultiButton
 {
   public:
     static const int MAX_BUTTONS = 20;
+    static const unsigned int DEFAULT_DEBOUNCE_DURATION = 20;
+    static const unsigned int DEFAULT_ANALOG_RESOLUTION = 1024;
 
     // pin - the pin to read
     // total - the total number of buttons
     // values[] - an array of int analogRead() values that are detected when each button is pressed. This must be in order of lowest button analogRead() value to highest
     // debounceDuration - milliseconds that a button must be continually down to count as a press
     // analogResolution - nearly always 1024, but sometimes people use different analog input resolutions
+    // clock - The clock implementation to use.
+    // gpio - The GPIO implementation to use when interacting with the board.
     
-    AnalogMultiButton(int pin, int total, const int values[], unsigned int debounceDuration = 20, unsigned int analogResolution = 1024);
+    AnalogMultiButton(int pin, int total, const int values[],
+        unsigned int debounceDuration = DEFAULT_DEBOUNCE_DURATION,
+        unsigned int analogResolution = DEFAULT_ANALOG_RESOLUTION,
+        Faker::Clock* clock = Faker::Clock::real(),
+        Faker::GPIO* gpio = Faker::GPIO::real());
 
     boolean isPressed(int button) { return buttonPressed == button; } // evaluates to true continually while <button> is pressed
 	boolean isPressedBefore(int button, int duration); // called continually while <button> is pressed for less than <duration> (ms)
@@ -63,6 +72,8 @@ class AnalogMultiButton
     unsigned int analogResolution;
     unsigned int debounceDuration;
     int valueBoundaries[AnalogMultiButton::MAX_BUTTONS];
+    Faker::Clock* clock;
+    Faker::GPIO* gpio;
 
     int buttonPressed = -1;
     int buttonOnPress = -1;
